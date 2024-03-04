@@ -1,0 +1,115 @@
+# #cloud-config
+# # Tamaño de la partición SWAP (en GB)
+# swap_size=2
+
+# # Tamaño de la partición /boot (en MB)
+# boot_size=500
+
+# # Tamaño de la partición /boot/efi (en MB)
+# efi_size=250
+
+# # Tamaño restante para la partición / (en GB)
+# root_size_gb=$(df -h / | grep -v "Filesystem" | awk '{print $2}')
+# root_size=$((root_size_gb - swap_size))
+
+# # Etiquetas de las particiones
+# boot_label="boot"
+# efi_label="boot/efi"
+# root_label="root"
+# home_label="home"
+# tmp_label="tmp"
+# var_label="var"
+# var_log_label="var/log"
+# var_log_audit_label="var/log/audit"
+# var_tmp_label="var/tmp"
+
+disk_setup:
+  - type: lvm
+    partitions:
+      - name: swap
+        size: 16G
+        type: swap
+      - name: boot
+        size: 500M
+        type: ext4
+        label: boot
+      - name: efi
+        size: 250M
+        type: fat
+        label: "boot/efi"
+      - name: root
+        size: 50G
+        type: ext4
+        label: root
+      - name: home
+        size: 20G
+        type: ext4
+        label: home
+      - name: tmp
+        size: 10G
+        type: ext4
+        label: tmp
+      - name: var
+        size: 150G
+        type: ext4
+        label: var
+      - name: var_log
+        size: 20G
+        type: ext4
+        label: "var/log"
+      - name: var_log_audit
+        size: 20G
+        type: ext4
+        label: "var/log/audit"
+      - name: var_tmp
+        size: 5G
+        type: ext4
+        label: "var/tmp"
+fs_setup:
+  - label: boot
+    mountpoint: /boot
+    filesystem: ext4
+  - label: "boot/efi"
+    mountpoint: /boot/efi
+    filesystem: fat
+  - label: root
+    mountpoint: /
+    filesystem: ext4
+  - label: home
+    mountpoint: /home
+    filesystem: ext4
+  - label: tmp
+    mountpoint: /tmp
+    filesystem: ext4
+  - label: var
+    mountpoint: /var
+    filesystem: ext4
+  - label: "var/log"
+    mountpoint: /var/log
+    filesystem: ext4
+  - label: "var/log/audit"
+    mountpoint: /var/log/audit
+    filesystem: ext4
+  - label: "var/tmp"
+    mountpoint: /var/tmp
+    filesystem: ext4
+ntp: 
+  allow:
+    - 192.168.1.0/24
+  ntp_client: auto 
+  enabled: true
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+packages:
+  - docker
+  - docker-compose
+power_state:
+  delay: 1
+  mode: reboot
+hostname: Test
+create_hostname_file: true
+prefer_fqdn_over_hostname: false
+manage_etc_hosts: true
+timezone: Europe/Madrid
+
